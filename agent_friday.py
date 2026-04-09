@@ -23,13 +23,14 @@ from livekit.agents.llm import mcp
 
 # Plugins
 from livekit.plugins import google as lk_google, openai as lk_openai, sarvam, silero
+from livekit.plugins import anthropic as lk_anthropic
 
 # ---------------------------------------------------------------------------
 # CONFIG
 # ---------------------------------------------------------------------------
 
 STT_PROVIDER       = "whisper"    # תומך עברית טוב יותר מ-Sarvam
-LLM_PROVIDER       = "gemini"     # לשמור לקול
+LLM_PROVIDER       = "anthropic"
 TTS_PROVIDER       = "openai"
 
 GEMINI_LLM_MODEL   = "gemini-2.5-flash"
@@ -151,6 +152,9 @@ def _build_llm():
     elif LLM_PROVIDER == "gemini":
         logger.info("LLM → Google Gemini (%s)", GEMINI_LLM_MODEL)
         return lk_google.LLM(model=GEMINI_LLM_MODEL, api_key=os.getenv("GOOGLE_API_KEY"))
+    elif LLM_PROVIDER == "anthropic":
+        logger.info("LLM → Anthropic Claude (claude-sonnet-4-6)")
+        return lk_anthropic.LLM(model="claude-sonnet-4-6")
     else:
         raise ValueError(f"Unknown LLM_PROVIDER: {LLM_PROVIDER!r}")
 
