@@ -39,7 +39,9 @@ def _fetch_market_data() -> dict:
                         f"&from_currency=USD&to_currency=ILS"
                         f"&apikey={api_key}"
                     )
-                    resp = client.get(url).json()
+                    raw = client.get(url)
+                    print(f"Alpha Vantage response for {cfg['symbol']}: {raw.text[:200]}")
+                    resp = raw.json()
                     rate = resp["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
                     data[name] = {"value": round(float(rate), 4), "change": 0}
                 else:
@@ -49,7 +51,9 @@ def _fetch_market_data() -> dict:
                         f"&symbol={cfg['symbol']}"
                         f"&apikey={api_key}"
                     )
-                    resp = client.get(url).json()
+                    raw = client.get(url)
+                    print(f"Alpha Vantage response for {cfg['symbol']}: {raw.text[:200]}")
+                    resp = raw.json()
                     quote = resp["Global Quote"]
                     price = float(quote["05. price"])
                     change_pct = quote["10. change percent"].replace("%", "")
