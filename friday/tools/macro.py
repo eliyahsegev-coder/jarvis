@@ -2,11 +2,8 @@
 macro.py — כלי מאקרו כלכלי יומי
 שולף נתוני שוק, מטבעות, ומדדים ומחזיר סיכום בעברית
 """
-import ssl
-import urllib.request
-ssl._create_default_https_context = ssl._create_unverified_context
-
-import yfinance as yf
+import os
+import httpx
 import anthropic
 
 ANTHROPIC_CLIENT = None
@@ -18,27 +15,48 @@ def _get_client():
     return ANTHROPIC_CLIENT
 
 def _fetch_market_data() -> dict:
+    api_key = os.getenv("ALPHA_VANTAGE_API_KEY", "")
+
     tickers = {
-        "S&P 500": "^GSPC",
-        "נאסד\"ק": "^IXIC",
-        "דאו ג'ונס": "^DJI",
-        "שקל/דולר": "ILS=X",
-        "נפט גולמי": "CL=F",
-        "זהב": "GC=F",
-        "ת\"א 125": "TA125.TA",
+        "S&P 500":      {"type": "quote",    "symbol": "SPY"},
+        'נאסד"ק':       {"type": "quote",    "symbol": "QQQ"},
+        "דאו ג'ונס":    {"type": "quote",    "symbol": "DIA"},
+        "נפט גולמי":    {"type": "quote",    "symbol": "CL=F"},
+        "זהב":          {"type": "quote",    "symbol": "GLD"},
+        'ת"א 125':      {"type": "quote",    "symbol": "TA125.TA"},
+        "שקל/דולר":     {"type": "fx",       "symbol": "USD/ILS"},
     }
+
     data = {}
-    for name, symbol in tickers.items():
-        try:
-            ticker = yf.Ticker(symbol)
-            hist = ticker.history(period="2d")
-            if len(hist) >= 2:
-                prev = hist["Close"].iloc[-2]
-                curr = hist["Close"].iloc[-1]
-                change_pct = ((curr - prev) / prev) * 100
-                data[name] = {"value": round(curr, 2), "change": round(change_pct, 2)}
-        except Exception:
-            data[name] = {"value": "N/A", "change": 0}
+
+    with httpx.Client(verify=False, timeout=10) as client:
+        for name, cfg in tickers.items():
+            try:
+                if cfg["type"] == "fx":
+                    url = (
+                        f"https://www.alphavantage.co/query"
+                        f"?function=CURRENCY_EXCHANGE_RATE"
+                        f"&from_currency=USD&to_currency=ILS"
+                        f"&apikey={api_key}"
+                    )
+                    resp = client.get(url).json()
+                    rate = resp["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
+                    data[name] = {"value": round(float(rate), 4), "change": 0}
+                else:
+                    url = (
+                        f"https://www.alphavantage.co/query"
+                        f"?function=GLOBAL_QUOTE"
+                        f"&symbol={cfg['symbol']}"
+                        f"&apikey={api_key}"
+                    )
+                    resp = client.get(url).json()
+                    quote = resp["Global Quote"]
+                    price = float(quote["05. price"])
+                    change_pct = quote["10. change percent"].replace("%", "")
+                    data[name] = {"value": round(price, 2), "change": round(float(change_pct), 2)}
+            except Exception:
+                data[name] = {"value": "N/A", "change": 0}
+
     return data
 
 def register(mcp):
