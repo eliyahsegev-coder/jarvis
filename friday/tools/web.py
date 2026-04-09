@@ -57,7 +57,7 @@ def register(mcp):
         Use this when the user asks 'What's going on in the world?' or for recent events.
         """
         
-        async with httpx.AsyncClient(follow_redirects=True, timeout=10) as client:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=10, verify=False) as client:
             # 1. Create a list of 'tasks' (one for each URL)
             tasks = [fetch_and_parse_feed(client, url) for url in SEED_FEEDS]
             
@@ -89,7 +89,7 @@ def register(mcp):
     @mcp.tool()
     async def fetch_url(url: str) -> str:
         """Fetch the raw text content of a URL."""
-        async with httpx.AsyncClient(follow_redirects=True, timeout=10) as client:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=10, verify=False) as client:
             response = await client.get(url)
             response.raise_for_status()
             return response.text[:4000]

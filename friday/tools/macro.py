@@ -2,6 +2,10 @@
 macro.py — כלי מאקרו כלכלי יומי
 שולף נתוני שוק, מטבעות, ומדדים ומחזיר סיכום בעברית
 """
+import ssl
+import urllib.request
+ssl._create_default_https_context = ssl._create_unverified_context
+
 import yfinance as yf
 import anthropic
 
