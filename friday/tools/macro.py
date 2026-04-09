@@ -3,6 +3,7 @@ macro.py — כלי מאקרו כלכלי יומי
 שולף נתוני שוק, מטבעות, ומדדים ומחזיר סיכום בעברית
 """
 import os
+import time
 import httpx
 import anthropic
 
@@ -21,9 +22,8 @@ def _fetch_market_data() -> dict:
         "S&P 500":      {"type": "quote",    "symbol": "SPY"},
         'נאסד"ק':       {"type": "quote",    "symbol": "QQQ"},
         "דאו ג'ונס":    {"type": "quote",    "symbol": "DIA"},
-        "נפט גולמי":    {"type": "quote",    "symbol": "CL=F"},
+        "נפט גולמי":    {"type": "quote",    "symbol": "USO"},
         "זהב":          {"type": "quote",    "symbol": "GLD"},
-        'ת"א 125':      {"type": "quote",    "symbol": "TA125.TA"},
         "שקל/דולר":     {"type": "fx",       "symbol": "USD/ILS"},
     }
 
@@ -56,6 +56,7 @@ def _fetch_market_data() -> dict:
                     data[name] = {"value": round(price, 2), "change": round(float(change_pct), 2)}
             except Exception:
                 data[name] = {"value": "N/A", "change": 0}
+            time.sleep(1.2)  # rate limit: 1 req/sec on free tier
 
     return data
 
