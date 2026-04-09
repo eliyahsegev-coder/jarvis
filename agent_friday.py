@@ -183,6 +183,7 @@ class FridayAgent(Agent):
 
     def __init__(self, stt, llm, tts) -> None:
         super().__init__(
+            name="friday",
             instructions=SYSTEM_PROMPT,
             stt=stt,
             llm=llm,
