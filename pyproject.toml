@@ -9,6 +9,7 @@ dependencies = [
     "httpx",
     "livekit-agents[deepgram,groq,openai,sarvam,silero]>=1.5.1",
     "livekit-plugins-google>=1.5.1",
+    "livekit-plugins-anthropic>=0.1.0",
     "python-dotenv",
     "anthropic",
     "python-pptx",
