@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FRIDAY — Business Advisor AI</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.9.0/jsrsasign-all-min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0a0f;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      letter-spacing: 4px;
+      color: #00d4ff;
+      text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+    }
+
+    header p {
+      font-size: 0.85rem;
+      color: #555;
+      letter-spacing: 2px;
+      margin-top: 6px;
+    }
+
+    #status-bar {
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      color: #444;
+      margin-bottom: 30px;
+    }
+
+    #status-bar span {
+      color: #00d4ff;
+    }
+
+    /* Waveform */
+    #waveform-container {
+      width: 340px;
+      height: 80px;
+      background: #0f0f1a;
+      border: 1px solid #1a1a2e;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 30px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #waveform-container canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    #speaking-label {
+      position: absolute;
+      bottom: 6px;
+      right: 12px;
+      font-size: 0.65rem;
+      color: #00d4ff;
+      letter-spacing: 1px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    #speaking-label.active { opacity: 1; }
+
+    /* Transcript */
+    #transcript {
+      width: 100%;
+      max-width: 600px;
+      background: #0f0f1a;
+      border: 1px solid #1a1a2e;
+      border-radius: 12px;
+      padding: 16px;
+      height: 280px;
+      overflow-y: auto;
+      margin-bottom: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #transcript:empty::before {
+      content: "Waiting for Friday to connect...";
+      color: #333;
+      font-size: 0.85rem;
+      align-self: center;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    .msg {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      max-width: 90%;
+    }
+
+    .msg.friday {
+      background: #0d1f2d;
+      border-left: 3px solid #00d4ff;
+      color: #cce8ff;
+      align-self: flex-start;
+    }
+
+    .msg.user {
+      background: #1a1a2e;
+      border-left: 3px solid #7c3aed;
+      color: #e0d4ff;
+      align-self: flex-end;
+    }
+
+    .msg .label {
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      opacity: 0.5;
+      margin-bottom: 3px;
+    }
+
+    /* Mic button */
+    #mic-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 2px solid #00d4ff;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    #mic-btn:hover { background: rgba(0, 212, 255, 0.1); }
+    #mic-btn.active { background: rgba(0, 212, 255, 0.15); box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+    #mic-btn.muted { border-color: #444; }
+    #mic-btn.muted svg { opacity: 0.3; }
+
+    #mic-btn svg { width: 28px; height: 28px; fill: #00d4ff; }
+
+    #mic-label {
+      font-size: 0.7rem;
+      color: #444;
+      letter-spacing: 1px;
+      margin-top: 10px;
+    }
+
+    /* Scrollbar */
+    #transcript::-webkit-scrollbar { width: 4px; }
+    #transcript::-webkit-scrollbar-track { background: transparent; }
+    #transcript::-webkit-scrollbar-thumb { background: #1a1a2e; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>FRIDAY</h1>
+    <p>BUSINESS ADVISOR AI</p>
+  </header>
+
+  <div id="status-bar">STATUS: <span id="status-text">INITIALIZING...</span></div>
+
+  <div id="waveform-container">
+    <canvas id="waveform"></canvas>
+    <div id="speaking-label">FRIDAY SPEAKING</div>
+  </div>
+
+  <div id="transcript"></div>
+
+  <button id="mic-btn" title="Toggle microphone">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm-1 17.93V21h-3v2h8v-2h-3v-2.07A8 8 0 0 0 20 11h-2a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.93z"/>
+    </svg>
+  </button>
+  <div id="mic-label">MICROPHONE</div>
+
+  <script>
+    // ── Config ────────────────────────────────────────────────────────────────
+    const LIVEKIT_URL  = 'ws://localhost:7880';
+    const API_KEY      = 'devkey';
+    const API_SECRET   = 'secret';
+    const ROOM_NAME    = 'my-room';
+    const IDENTITY     = 'user-' + Math.random().toString(36).slice(2, 7);
+
+    // ── JWT Token generation (client-side, dev only) ──────────────────────────
+    function createToken() {
+      const now   = Math.floor(Date.now() / 1000);
+      const claim = {
+        iss: API_KEY,
+        sub: IDENTITY,
+        iat: now,
+        exp: now + 3600,
+        video: { room: ROOM_NAME, roomJoin: true, canPublish: true, canSubscribe: true }
+      };
+      const header = { alg: 'HS256', typ: 'JWT' };
+      return KJUR.jws.JWS.sign('HS256', JSON.stringify(header), JSON.stringify(claim), { utf8: API_SECRET });
+    }
+
+    // ── UI helpers ────────────────────────────────────────────────────────────
+    const statusEl   = document.getElementById('status-text');
+    const transcript = document.getElementById('transcript');
+    const micBtn     = document.getElementById('mic-btn');
+    const speakLabel = document.getElementById('speaking-label');
+
+    function setStatus(text) { statusEl.textContent = text; }
+
+    function addMessage(role, text) {
+      const div = document.createElement('div');
+      div.className = `msg ${role}`;
+      div.innerHTML = `<div class="label">${role === 'friday' ? 'FRIDAY' : 'YOU'}</div>${text}`;
+      transcript.appendChild(div);
+      transcript.scrollTop = transcript.scrollHeight;
+    }
+
+    // ── Waveform ──────────────────────────────────────────────────────────────
+    const canvas  = document.getElementById('waveform');
+    const ctx     = canvas.getContext('2d');
+    let   analyser, dataArray, animFrame;
+    let   fridaySpeaking = false;
+
+    function resizeCanvas() {
+      canvas.width  = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    function drawIdle() {
+      resizeCanvas();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#1a1a2e';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height / 2);
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+    }
+
+    function drawWaveform() {
+      if (!analyser) { drawIdle(); return; }
+      animFrame = requestAnimationFrame(drawWaveform);
+      analyser.getByteTimeDomainData(dataArray);
+
+      resizeCanvas();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.lineWidth   = 2;
+      ctx.strokeStyle = '#00d4ff';
+      ctx.shadowColor = '#00d4ff';
+      ctx.shadowBlur  = 6;
+      ctx.beginPath();
+
+      const sliceWidth = canvas.width / dataArray.length;
+      let x = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = (v * canvas.height) / 2;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        x += sliceWidth;
+      }
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+    }
+
+    drawIdle();
+
+    function attachRemoteAudioAnalyser(audioTrack) {
+      const stream  = new MediaStream([audioTrack.mediaStreamTrack]);
+      const audioCtx = new AudioContext();
+      const source  = audioCtx.createMediaStreamSource(stream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      source.connect(analyser);
+      if (animFrame) cancelAnimationFrame(animFrame);
+      drawWaveform();
+    }
+
+    // ── LiveKit connection ────────────────────────────────────────────────────
+    let room;
+    let micEnabled = true;
+
+    async function connect() {
+      setStatus('GENERATING TOKEN...');
+      const token = createToken();
+
+      setStatus('CONNECTING...');
+      room = new LivekitClient.Room({
+        adaptiveStream: true,
+        dynacast: true,
+      });
+
+      // Remote track subscribed (Friday's audio)
+      room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, pub, participant) => {
+        if (track.kind === LivekitClient.Track.Kind.Audio) {
+          const el = track.attach();
+          el.style.display = 'none';
+          document.body.appendChild(el);
+          fridaySpeaking = true;
+          speakLabel.classList.add('active');
+          attachRemoteAudioAnalyser(track);
+        }
+      });
+
+      room.on(LivekitClient.RoomEvent.TrackUnsubscribed, (track) => {
+        if (track.kind === LivekitClient.Track.Kind.Audio) {
+          track.detach();
+          fridaySpeaking = false;
+          speakLabel.classList.remove('active');
+          if (animFrame) cancelAnimationFrame(animFrame);
+          drawIdle();
+        }
+      });
+
+      // Transcription / data messages
+      room.on(LivekitClient.RoomEvent.DataReceived, (payload, participant) => {
+        try {
+          const text = new TextDecoder().decode(payload);
+          const data = JSON.parse(text);
+          if (data.type === 'transcript') {
+            const role = participant?.identity === IDENTITY ? 'user' : 'friday';
+            addMessage(role, data.text);
+          }
+        } catch (_) {}
+      });
+
+      room.on(LivekitClient.RoomEvent.ParticipantConnected, (p) => {
+        if (p.identity !== IDENTITY) {
+          setStatus('FRIDAY CONNECTED');
+          addMessage('friday', 'Friday online, boss. Systems are up. What do you need?');
+        }
+      });
+
+      room.on(LivekitClient.RoomEvent.ParticipantDisconnected, (p) => {
+        if (p.identity !== IDENTITY) {
+          setStatus('WAITING FOR AGENT...');
+        }
+      });
+
+      room.on(LivekitClient.RoomEvent.Disconnected, () => {
+        setStatus('DISCONNECTED');
+      });
+
+      await room.connect(LIVEKIT_URL, token);
+      setStatus('CONNECTED — WAITING FOR FRIDAY...');
+
+      // Enable microphone
+      await room.localParticipant.setMicrophoneEnabled(true);
+      micBtn.classList.add('active');
+      document.getElementById('mic-label').textContent = 'MIC ON';
+    }
+
+    // ── Mic toggle ────────────────────────────────────────────────────────────
+    micBtn.addEventListener('click', async () => {
+      if (!room) return;
+      micEnabled = !micEnabled;
+      await room.localParticipant.setMicrophoneEnabled(micEnabled);
+      micBtn.classList.toggle('active', micEnabled);
+      micBtn.classList.toggle('muted', !micEnabled);
+      document.getElementById('mic-label').textContent = micEnabled ? 'MIC ON' : 'MIC OFF';
+    });
+
+    // ── Start ─────────────────────────────────────────────────────────────────
+    connect().catch(err => {
+      setStatus('ERROR — ' + err.message);
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
