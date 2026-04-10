@@ -16,9 +16,16 @@ timeout /t 5 /nobreak > nul
 start "Agent" /min cmd /c "cd /d C:\claude\jarvis\friday-tony-stark-demo && uv run friday_voice"
 timeout /t 6 /nobreak > nul
 
+:: Wait longer for agent to fully register
+timeout /t 8 /nobreak > nul
+
 :: Auto-dispatch
 cd /d C:\claude\jarvis\friday-tony-stark-demo\livekit
 lk.exe dispatch create --room my-room --agent-name "friday" --url ws://localhost:7880 --api-key devkey --api-secret secret
 
-echo FRIDAY is online!
-pause
+:: Keep window open to show status
+echo.
+echo All systems online! Friday is ready.
+echo.
+echo Press any key to close this window...
+pause > nul
