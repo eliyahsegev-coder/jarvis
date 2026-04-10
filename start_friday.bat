@@ -6,18 +6,15 @@ echo ========================================
 
 :: Start LiveKit Server
 start "LiveKit" /min cmd /c "cd /d C:\claude\jarvis\friday-tony-stark-demo\livekit && livekit-server.exe --dev"
-timeout /t 5 /nobreak > nul
+timeout /t 6 /nobreak > nul
 
 :: Start MCP Server
 start "MCP" /min cmd /c "cd /d C:\claude\jarvis\friday-tony-stark-demo && uv run friday"
-timeout /t 5 /nobreak > nul
-
-:: Start Voice Agent
-start "Agent" /min cmd /c "cd /d C:\claude\jarvis\friday-tony-stark-demo && uv run friday_voice"
 timeout /t 6 /nobreak > nul
 
-:: Wait longer for agent to fully register
-timeout /t 8 /nobreak > nul
+:: Start Voice Agent (single instance)
+start "Agent" /min cmd /c "cd /d C:\claude\jarvis\friday-tony-stark-demo && uv run friday_voice"
+timeout /t 10 /nobreak > nul
 
 :: Auto-dispatch
 cd /d C:\claude\jarvis\friday-tony-stark-demo\livekit
