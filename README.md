@@ -1,164 +1,172 @@
-# F.R.I.D.A.Y. — Tony Stark Demo
+# Friday — Business Advisor AI
 
-> *"Fully Responsive Intelligent Digital Assistant for You"*
+> *A Jarvis-level AI business advisor running on your personal device.*
 
-A Tony Stark-inspired AI assistant split into two cooperating pieces:
-
-| Component | What it is |
-|-----------|-----------|
-| **MCP Server** (`uv run friday`) | A [FastMCP](https://github.com/jlowin/fastmcp) server that exposes tools (news, web search, system info, …) over SSE. Think of it as the Stark Industries backend — it does the actual work. |
-| **Voice Agent** (`uv run friday_voice`) | A [LiveKit Agents](https://github.com/livekit/agents) voice pipeline that listens to your microphone, reasons with an LLM (Gemini 2.5 Flash by default), and speaks back with OpenAI TTS — all while pulling tools from the MCP server in real time. |
-
-Demo: [Instagram reel](https://www.instagram.com/p/DW2HjYtkwg_/)
-
-[![Demo Video Guide](https://img.youtube.com/vi/mMY9swqe3BI/maxresdefault.jpg)](https://www.youtube.com/watch?v=mMY9swqe3BI)
+Friday is a voice-powered AI assistant that gives you real-time market data, business analysis, presentations, and browser control — all hands-free.
 
 ---
 
 ## How it works
 
 ```
-Microphone ──► STT (Sarvam Saaras v3)
+Microphone ──► STT (OpenAI Whisper)
                     │
                     ▼
-             LLM (Gemini 2.5 Flash)  ◄──────► MCP Server (FastMCP / SSE)
-                    │                              ├─ get_world_news
-                    ▼                              ├─ open_world_monitor
-             TTS (OpenAI nova)                     ├─ search_web
-                    │                              └─ …more tools
-                    ▼
-             Speaker / LiveKit room
-```
-
-The voice agent connects to the MCP server via SSE at `http://127.0.0.1:8000/sse` (auto-resolved to the Windows host IP when running inside WSL).
-
----
-
-## Project structure
-
-```
-friday-tony-stark-demo/
-├── server.py           # uv run friday  → starts the MCP server (SSE on :8000)
-├── agent_friday.py     # uv run friday_voice → starts the LiveKit voice agent
-├── pyproject.toml
-├── .env.example        # copy → .env and fill in your keys
-│
-└── friday/             # MCP server package
-    ├── config.py       # env-var loading & app-wide settings
-    ├── tools/          # MCP tools (callable by the LLM)
-    │   ├── web.py      # search_web, fetch_url, get_world_news, open_world_monitor
-    │   ├── system.py   # get_current_time, get_system_info
-    │   └── utils.py    # format_json, word_count
-    ├── prompts/        # MCP prompt templates (summarize, explain_code, …)
-    └── resources/      # MCP resources exposed to clients (friday://info)
+             LLM (Claude Sonnet 4.6)  ◄──────► MCP Server (FastMCP / SSE)
+                    │                              ├─ macro       (market data)
+                    ▼                              ├─ business    (SWOT analysis)
+             TTS (OpenAI onyx)                     ├─ reports     (PPTX generator)
+                    │                              ├─ browser     (open websites)
+                    ▼                              ├─ digest      (morning briefing)
+             Speaker / LiveKit room                └─ web         (news & search)
 ```
 
 ---
 
-## Quick start
+## Quick Start
 
-### 1. Prerequisites
+### Option A — One click (recommended)
 
-- Python ≥ 3.11
-- [`uv`](https://github.com/astral-sh/uv) — `pip install uv` or `curl -Lsf https://astral.sh/uv/install.sh | sh`
-- A [LiveKit Cloud](https://cloud.livekit.io) project (free tier works)
-
-### 2. Clone & install
-
-```bash
-git clone https://github.com/SAGAR-TAMANG/friday-tony-stark-demo.git
-cd friday-tony-stark-demo
-uv sync          # creates .venv and installs all dependencies
+```bat
+double-click start_friday.bat
 ```
 
-### 3. Set up environment
+Starts LiveKit Server, MCP Server, and the Voice Agent automatically, then opens a dispatch to connect.
 
-```bash
-cp .env.example .env
-# Open .env and fill in your API keys (see the section below)
+### Option B — Manual (3 terminals)
+
+**Terminal 1 — LiveKit Server**
+```powershell
+cd C:\claude\jarvis\friday-tony-stark-demo\livekit
+.\livekit-server.exe --dev
 ```
 
-### 4. Run — two terminals
-
-**Terminal 1 — MCP server** (must start first)
-
-```bash
+**Terminal 2 — MCP Server**
+```powershell
+cd C:\claude\jarvis\friday-tony-stark-demo
 uv run friday
 ```
 
-Starts the FastMCP server on `http://127.0.0.1:8000/sse`. The voice agent connects here to fetch its tools.
-
-**Terminal 2 — Voice agent**
-
-```bash
+**Terminal 3 — Voice Agent**
+```powershell
+cd C:\claude\jarvis\friday-tony-stark-demo
 uv run friday_voice
 ```
 
-Starts the LiveKit voice agent in **dev mode** — it joins a LiveKit room and begins listening. Open the [LiveKit Agents Playground](https://agents-playground.livekit.io) and connect to your room to talk to FRIDAY.
+### Connect via Playground
+
+1. Open https://agents-playground.livekit.io
+2. Enter:
+   - **LiveKit URL:** `ws://localhost:7880`
+   - **API Key:** `devkey`
+   - **API Secret:** `secret`
+3. Click **Connect** → click the microphone → talk to Friday
 
 ---
 
-## `uv run friday` vs `uv run friday_voice`
+## Tools
 
-| Command | Entry point | What it does |
-|---------|------------|--------------|
-| `uv run friday` | `server.py → main()` | Launches the **FastMCP server** over SSE transport on port 8000. This is the "brain backend" — it registers all tools, prompts, and resources that the LLM can call. |
-| `uv run friday_voice` | `agent_friday.py → dev()` | Launches the **LiveKit voice agent**. It builds the STT / LLM / TTS pipeline, connects to your LiveKit room, and wires up the MCP server as a tool source. The `dev()` wrapper auto-injects the `dev` CLI flag so you don't have to type it manually. |
-
-> Both processes must run **simultaneously**. The voice agent calls the MCP server in real time whenever it needs a tool (e.g. fetching news).
+| Module | Tools | What it does |
+|--------|-------|-------------|
+| `macro.py` | `get_macro_summary` | Real-time market data: S&P 500, Nasdaq, Dow Jones, oil, gold, USD/ILS via Alpha Vantage |
+| `business.py` | `analyze_business`, `daily_briefing` | SWOT analysis, risks, strategic recommendations |
+| `reports.py` | `generate_presentation`, `generate_summary_doc` | Creates PPTX presentations and auto-opens them |
+| `browser.py` | `open_website`, `search_google`, `open_financial_site`, `search_news` | Opens Bloomberg, Reuters, CNBC, TradingView, Google News, and more |
+| `digest.py` | `morning_digest`, `deep_research` | Daily briefing with markets + insights + action items; deep multi-step business research |
+| `web.py` | `get_world_news`, `fetch_url`, `open_world_monitor` | Live RSS headlines from BBC, CNBC, NYT, Al Jazeera |
 
 ---
 
-## Environment variables
+## Example Voice Commands
 
-Copy `.env.example` → `.env` and fill in the values below.
+- *"Give me the morning briefing"*
+- *"What are the markets doing today?"*
+- *"Analyze my SaaS business idea"*
+- *"Open Bloomberg"*
+- *"Search for news about AI regulation"*
+- *"Make a presentation about our Q2 strategy"*
+- *"Research the EV market"*
+
+---
+
+## Project Structure
+
+```
+friday-tony-stark-demo/
+├── start_friday.bat        ← one-click launch (all systems)
+├── setup_startup.bat       ← add Friday to Windows startup
+├── wake_word.py            ← "Hey Friday" wake word listener
+├── server.py               ← MCP server entry point
+├── agent_friday.py         ← LiveKit voice agent
+├── pyproject.toml
+├── .env.example
+│
+├── friday/
+│   └── tools/
+│       ├── macro.py        ← market data (Alpha Vantage)
+│       ├── business.py     ← SWOT & business analysis
+│       ├── reports.py      ← PPTX presentations
+│       ├── browser.py      ← browser control
+│       ├── digest.py       ← morning briefing & research
+│       └── web.py          ← news & web fetch
+│
+└── livekit/
+    ├── livekit-server.exe  ← local LiveKit server (download separately)
+    ├── lk.exe              ← LiveKit CLI
+    └── start_livekit.bat
+```
+
+> **Note:** `livekit-server.exe` and `lk.exe` are not tracked in git (too large).
+> Download from [livekit/livekit releases](https://github.com/livekit/livekit/releases) and place in `livekit/`.
+
+---
+
+## Environment Variables
+
+Copy `.env.example` → `.env` and fill in:
 
 | Variable | Required | Where to get it |
 |----------|----------|----------------|
-| `LIVEKIT_URL` | ✅ | [LiveKit Cloud dashboard](https://cloud.livekit.io) → your project URL |
-| `LIVEKIT_API_KEY` | ✅ | LiveKit Cloud → API Keys |
-| `LIVEKIT_API_SECRET` | ✅ | LiveKit Cloud → API Keys |
-| `GROQ_API_KEY` | optional | [console.groq.com](https://console.groq.com) — only needed if you switch `LLM_PROVIDER` to `"groq"` |
-| `SARVAM_API_KEY` | ✅ (default STT) | [dashboard.sarvam.ai](https://dashboard.sarvam.ai) |
-| `OPENAI_API_KEY` | ✅ (default TTS) | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
-| `DEEPGRAM_API_KEY` | optional | [console.deepgram.com](https://console.deepgram.com) |
-| `GOOGLE_APPLICATION_CREDENTIALS` | optional | GCP service-account JSON path — only for `STT_PROVIDER = "google"` |
-| `GOOGLE_API_KEY` | ✅ (default LLM) | [aistudio.google.com](https://aistudio.google.com/projects) |
-| `SUPABASE_URL` | optional | [supabase.com](https://supabase.com) — for the ticketing tool |
-| `SUPABASE_API_KEY` | optional | Supabase project → API settings |
+| `LIVEKIT_URL` | ✅ | `ws://localhost:7880` (local dev) |
+| `LIVEKIT_API_KEY` | ✅ | `devkey` (local dev) |
+| `LIVEKIT_API_SECRET` | ✅ | `secret` (local dev) |
+| `OPENAI_API_KEY` | ✅ | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) — used for STT (Whisper) and TTS |
+| `ANTHROPIC_API_KEY` | ✅ | [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys) — used for LLM (Claude Sonnet) and all business tools |
+| `ALPHA_VANTAGE_API_KEY` | ✅ | [alphavantage.co](https://www.alphavantage.co/support/#api-key) — free tier: 25 req/day |
+| `GOOGLE_API_KEY` | optional | [aistudio.google.com](https://aistudio.google.com/projects) — only if switching LLM to Gemini |
+| `PORCUPINE_ACCESS_KEY` | optional | [console.picovoice.ai](https://console.picovoice.ai/) — free, for wake word activation |
 
 ---
 
-## Switching providers
+## Wake Word (Optional)
 
-Open `agent_friday.py` and change the provider constants at the top:
+To activate Friday hands-free with a voice command:
 
-```python
-STT_PROVIDER = "sarvam"   # "sarvam" | "whisper"
-LLM_PROVIDER = "gemini"   # "gemini" | "openai"
-TTS_PROVIDER = "openai"   # "openai" | "sarvam"
+1. Get a free key at https://console.picovoice.ai/
+2. Add `PORCUPINE_ACCESS_KEY=your_key` to `.env`
+3. Run: `uv run python wake_word.py`
+
+---
+
+## Add to Windows Startup
+
+To have Friday start automatically when Windows boots:
+
+```bat
+double-click setup_startup.bat
 ```
 
 ---
 
-## Adding a new tool
+## Tech Stack
 
-1. Create or open a file in `friday/tools/`
-2. Define a `register(mcp)` function and decorate tools with `@mcp.tool()`
-3. Import and call `register(mcp)` inside `friday/tools/__init__.py`
-
-The MCP server will pick it up on next start.
-
----
-
-## Tech stack
-
-- **[FastMCP](https://github.com/jlowin/fastmcp)** — MCP server framework
 - **[LiveKit Agents](https://github.com/livekit/agents)** — real-time voice pipeline
-- **Sarvam Saaras v3** — STT (Indian-English optimised)
-- **Google Gemini 2.5 Flash** — LLM
-- **OpenAI TTS** (`nova` voice) — TTS
-- **[uv](https://github.com/astral-sh/uv)** — fast Python package manager
+- **OpenAI Whisper** — STT (strong multilingual support)
+- **Anthropic Claude Sonnet 4.6** — LLM
+- **OpenAI TTS** (`onyx` voice) — TTS
+- **[FastMCP](https://github.com/jlowin/fastmcp)** — MCP server framework
+- **Alpha Vantage** — real-time market data
+- **[uv](https://github.com/astral-sh/uv)** — Python package manager
 
 ---
 
