@@ -71,7 +71,12 @@ def register(mcp):
                 p.level = 0
 
         prs.save(output_path)
-        return f"המצגת נוצרה בהצלחה: {os.path.abspath(output_path)} ({len(data['slides'])} שקפים)"
+        import subprocess
+        subprocess.Popen(
+            ['powershell', '-c', f'Start-Process "{os.path.abspath(output_path)}"'],
+            shell=True
+        )
+        return f"Presentation created and opened: {os.path.abspath(output_path)} ({len(data['slides'])} slides)"
 
     @mcp.tool()
     async def generate_summary_doc(text: str) -> str:
