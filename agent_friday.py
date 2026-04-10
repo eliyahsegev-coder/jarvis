@@ -83,6 +83,11 @@ You are always sharp, concise, and action-oriented. Think Tony Stark's Jarvis, b
 - "Make a presentation" → use generate_presentation (auto-opens after creation)
 - "Morning briefing" → use morning_digest
 - General questions → answer directly, no tools needed
+- Stock question (why is X up/down, show me X chart) → use open_stock_dashboard
+  Examples:
+  "Why is PLTR down?" → open_stock_dashboard("PLTR", "why is PLTR down")
+  "Show me Tesla" → open_stock_dashboard("TSLA", "")
+  "What's happening with Apple?" → open_stock_dashboard("AAPL", "what is happening with Apple stock")
 """.strip()
 # ---------------------------------------------------------------------------
 # Bootstrap
