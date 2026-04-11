@@ -83,58 +83,58 @@
 
     #speaking-label.active { opacity: 1; }
 
-    /* Transcript */
-    #transcript {
+    /* Transcript panel */
+    #transcript-panel {
       width: 100%;
       max-width: 600px;
       background: #0f0f1a;
       border: 1px solid #1a1a2e;
       border-radius: 12px;
-      padding: 16px;
+      padding: 40px 16px 16px 16px;
       height: 280px;
       overflow-y: auto;
       margin-bottom: 30px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+      scroll-behavior: smooth;
+      position: relative;
     }
 
-    #transcript:empty::before {
+    #transcript-panel .panel-label {
+      position: absolute;
+      top: 10px;
+      left: 14px;
+      font-size: 0.65rem;
+      color: #00d4ff;
+      letter-spacing: 1.5px;
+    }
+
+    #transcript-panel:empty::after {
       content: "Waiting for Friday to connect...";
       color: #333;
       font-size: 0.85rem;
       align-self: center;
-      margin-top: auto;
-      margin-bottom: auto;
+      margin: auto;
     }
 
-    .msg {
-      padding: 8px 12px;
-      border-radius: 8px;
+    .transcript-line {
       font-size: 0.88rem;
-      line-height: 1.5;
-      max-width: 90%;
-    }
-
-    .msg.friday {
-      background: #0d1f2d;
-      border-left: 3px solid #00d4ff;
+      line-height: 1.6;
       color: #cce8ff;
-      align-self: flex-start;
+      border-left: 2px solid #00d4ff;
+      padding-left: 10px;
+      animation: fadeIn 0.3s ease;
     }
 
-    .msg.user {
-      background: #1a1a2e;
-      border-left: 3px solid #7c3aed;
-      color: #e0d4ff;
-      align-self: flex-end;
+    .transcript-line.user {
+      color: #d4ccff;
+      border-left-color: #7c3aed;
     }
 
-    .msg .label {
-      font-size: 0.7rem;
-      letter-spacing: 1px;
-      opacity: 0.5;
-      margin-bottom: 3px;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     /* Mic button */
@@ -167,9 +167,9 @@
     }
 
     /* Scrollbar */
-    #transcript::-webkit-scrollbar { width: 4px; }
-    #transcript::-webkit-scrollbar-track { background: transparent; }
-    #transcript::-webkit-scrollbar-thumb { background: #1a1a2e; border-radius: 2px; }
+    #transcript-panel::-webkit-scrollbar { width: 4px; }
+    #transcript-panel::-webkit-scrollbar-track { background: transparent; }
+    #transcript-panel::-webkit-scrollbar-thumb { background: #1a1a2e; border-radius: 2px; }
   </style>
 </head>
 <body>
@@ -186,7 +186,9 @@
     <div id="speaking-label">FRIDAY SPEAKING</div>
   </div>
 
-  <div id="transcript"></div>
+  <div id="transcript-panel">
+    <span class="panel-label">💬 LIVE TRANSCRIPT</span>
+  </div>
 
   <button id="mic-btn" title="Toggle microphone">
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -218,19 +220,25 @@
     }
 
     // ── UI helpers ────────────────────────────────────────────────────────────
-    const statusEl   = document.getElementById('status-text');
-    const transcript = document.getElementById('transcript');
-    const micBtn     = document.getElementById('mic-btn');
-    const speakLabel = document.getElementById('speaking-label');
+    const statusEl      = document.getElementById('status-text');
+    const transcriptPanel = document.getElementById('transcript-panel');
+    const micBtn        = document.getElementById('mic-btn');
+    const speakLabel    = document.getElementById('speaking-label');
 
     function setStatus(text) { statusEl.textContent = text; }
 
-    function addMessage(role, text) {
-      const div = document.createElement('div');
-      div.className = `msg ${role}`;
-      div.innerHTML = `<div class="label">${role === 'friday' ? 'FRIDAY' : 'YOU'}</div>${text}`;
-      transcript.appendChild(div);
-      transcript.scrollTop = transcript.scrollHeight;
+    function addLine(role, text, segId = null) {
+      if (!text.trim()) return;
+      if (segId) {
+        const existing = document.getElementById(`seg-${segId}`);
+        if (existing) { existing.textContent = text; return; }
+      }
+      const line = document.createElement('div');
+      line.className = `transcript-line ${role}`;
+      if (segId) line.id = `seg-${segId}`;
+      line.textContent = text;
+      transcriptPanel.appendChild(line);
+      transcriptPanel.scrollTop = transcriptPanel.scrollHeight;
     }
 
     // ── Waveform ──────────────────────────────────────────────────────────────
@@ -332,14 +340,23 @@
         }
       });
 
-      // Transcription / data messages
+      // תמלול מילה במילה
+      room.on(LivekitClient.RoomEvent.TranscriptionReceived, (segments, participant) => {
+        const isUser = participant?.identity === IDENTITY;
+        const role = isUser ? 'user' : 'friday';
+        segments.forEach(seg => {
+          if (seg.text?.trim()) addLine(role, seg.text, seg.id);
+        });
+      });
+
+      // גיבוי — data messages
       room.on(LivekitClient.RoomEvent.DataReceived, (payload, participant) => {
         try {
           const text = new TextDecoder().decode(payload);
           const data = JSON.parse(text);
-          if (data.type === 'transcript') {
+          if (data.type === 'transcript' && data.text?.trim()) {
             const role = participant?.identity === IDENTITY ? 'user' : 'friday';
-            addMessage(role, data.text);
+            addLine(role, data.text);
           }
         } catch (_) {}
       });
@@ -347,7 +364,7 @@
       room.on(LivekitClient.RoomEvent.ParticipantConnected, (p) => {
         if (p.identity !== IDENTITY) {
           setStatus('FRIDAY CONNECTED');
-          addMessage('friday', 'Friday online, boss. Systems are up. What do you need?');
+          addLine('friday', 'Friday online, boss. Systems are up. What do you need?');
         }
       });
 

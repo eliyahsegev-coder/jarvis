@@ -88,6 +88,8 @@ You are always sharp, concise, and action-oriented. Think Tony Stark's Jarvis, b
   "Why is PLTR down?" → open_stock_dashboard("PLTR", "why is PLTR down")
   "Show me Tesla" → open_stock_dashboard("TSLA", "")
   "What's happening with Apple?" → open_stock_dashboard("AAPL", "what is happening with Apple stock")
+- "What did you show me about X?" or "Tell me more about X" → use get_dashboard_data("X")
+- After opening a dashboard, you have access to the analysis via get_dashboard_data
 """.strip()
 # ---------------------------------------------------------------------------
 # Bootstrap
