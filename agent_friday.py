@@ -90,6 +90,8 @@ You are always sharp, concise, and action-oriented. Think Tony Stark's Jarvis, b
   "What's happening with Apple?" → open_stock_dashboard("AAPL", "what is happening with Apple stock")
 - "What did you show me about X?" or "Tell me more about X" → use get_dashboard_data("X")
 - After opening a dashboard, you have access to the analysis via get_dashboard_data
+- "Analyze the dashboard/chart/graph" or "What do you see?" → use analyze_dashboard_screenshot
+- "Analyze this with context: [question]" → use analyze_dashboard_screenshot(question="[question]")
 """.strip()
 # ---------------------------------------------------------------------------
 # Bootstrap
