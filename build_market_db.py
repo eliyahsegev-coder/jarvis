@@ -248,7 +248,7 @@ for symbol, name in TICKERS:
 BATCH_SIZE = 50
 for i in range(0, len(all_summaries), BATCH_SIZE):
     batch = all_summaries[i:i + BATCH_SIZE]
-    market_collection.add(
+    market_collection.upsert(
         documents=[s["text"] for s in batch],
         ids=[s["id"] for s in batch],
         metadatas=[s["metadata"] for s in batch]
@@ -268,7 +268,7 @@ fg_summaries = download_fear_greed()
 if fg_summaries:
     for i in range(0, len(fg_summaries), BATCH_SIZE):
         batch = fg_summaries[i:i + BATCH_SIZE]
-        fg_collection.add(
+        fg_collection.upsert(
             documents=[s["text"] for s in batch],
             ids=[s["id"] for s in batch],
             metadatas=[s["metadata"] for s in batch]
@@ -282,7 +282,7 @@ events_collection = client.get_or_create_collection(
     metadata={"description": "Major historical market events"}
 )
 
-events_collection.add(
+events_collection.upsert(
     documents=[e["event"] for e in HISTORICAL_EVENTS],
     ids=[f"event_{e['year']}" for e in HISTORICAL_EVENTS],
     metadatas=[{"year": e["year"]} for e in HISTORICAL_EVENTS]

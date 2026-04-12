@@ -175,5 +175,6 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 
-# ChromaDB market database (large, generated locally)
-data/market_chroma_db/
+# Generated data (large, built locally)
+data/
+*.db
