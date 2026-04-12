@@ -17,6 +17,9 @@ dependencies = [
     "pvporcupine>=3.0.0",
     "pyaudio>=0.2.14",
     "pyautogui>=0.9.54",
+    "chromadb>=0.4.0",
+    "pandas>=2.0.0",
+    "requests>=2.31.0",
 ]
 
 [project.scripts]

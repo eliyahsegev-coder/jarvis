@@ -92,6 +92,14 @@ You are always sharp, concise, and action-oriented. Think Tony Stark's Jarvis, b
 - After opening a dashboard, you have access to the analysis via get_dashboard_data
 - "Analyze the dashboard/chart/graph" or "What do you see?" → use analyze_dashboard_screenshot
 - "Analyze this with context: [question]" → use analyze_dashboard_screenshot(question="[question]")
+
+## Historical Market Intelligence
+- "What happened during [period/event]?" → use query_market_history
+- "Is this similar to [event]?" → use find_similar_periods
+- "Show me [symbol] history" → use get_asset_history
+- "When was the last time [condition]?" → use query_market_history
+- "Find similar crashes/rallies" → use find_similar_periods
+- Always use historical context when analyzing current market conditions
 """.strip()
 # ---------------------------------------------------------------------------
 # Bootstrap
