@@ -101,6 +101,14 @@ You are always sharp, concise, and action-oriented. Think Tony Stark's Jarvis, b
 - "When was the last time [condition]?" → use query_market_history
 - "Find similar crashes/rallies" → use find_similar_periods
 - Always use historical context when analyzing current market conditions
+
+## Interactive Event Explainer
+- "Tell me about crashes / crises / historical events" →
+  1. use query_market_history to get relevant data
+  2. build events list with year/name/symbol/change_pct/description/causes/duration_months/recovery_years
+  3. call open_event_explainer with title, events list, and a spoken narrative
+- Always call open_event_explainer when explaining multiple historical market events
+- The narrative should be conversational and spoken aloud — it will appear word-by-word on screen
 """.strip()
 # ---------------------------------------------------------------------------
 # Bootstrap
