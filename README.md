@@ -13,12 +13,15 @@ Microphone ──► STT (OpenAI Whisper)
                     │
                     ▼
              LLM (Claude Sonnet 4.6)  ◄──────► MCP Server (FastMCP / SSE)
-                    │                              ├─ macro       (market data)
-                    ▼                              ├─ business    (SWOT analysis)
-             TTS (OpenAI onyx)                     ├─ reports     (PPTX generator)
-                    │                              ├─ browser     (open websites)
-                    ▼                              ├─ digest      (morning briefing)
-             Speaker / LiveKit room                └─ web         (news & search)
+                    │                              ├─ macro          (market data)
+                    ▼                              ├─ business       (SWOT analysis)
+             TTS (OpenAI onyx)                     ├─ reports        (PPTX generator)
+                    │                              ├─ browser        (open websites)
+                    ▼                              ├─ digest         (morning briefing)
+             Speaker / LiveKit room                ├─ web            (news & search)
+                                                   ├─ dashboard      (stock charts)
+                                                   ├─ vision         (screenshot analysis)
+                                                   └─ market_memory  (100yr history DB)
 ```
 
 ---
@@ -74,6 +77,9 @@ uv run friday_voice
 | `browser.py` | `open_website`, `search_google`, `open_financial_site`, `search_news` | Opens Bloomberg, Reuters, CNBC, TradingView, Google News, and more |
 | `digest.py` | `morning_digest`, `deep_research` | Daily briefing with markets + insights + action items; deep multi-step business research |
 | `web.py` | `get_world_news`, `fetch_url`, `open_world_monitor` | Live RSS headlines from BBC, CNBC, NYT, Al Jazeera |
+| `dashboard.py` | `open_stock_dashboard` | פותח דשבורד מניה מחולק ל-3 חלונות: גרף חי, ניתוח Claude, חיפוש Google |
+| `vision.py` | `analyze_dashboard_screenshot` | מצלם את המסך ומנתח גרפים עם Claude Vision |
+| `market_memory.py` | `query_market_history`, `find_similar_periods`, `get_asset_history` | חיפוש סמנטי ב-100 שנות היסטוריה פיננסית (ChromaDB מקומי) |
 
 ---
 
@@ -86,6 +92,10 @@ uv run friday_voice
 - *"Search for news about AI regulation"*
 - *"Make a presentation about our Q2 strategy"*
 - *"Research the EV market"*
+- *"Why is PLTR down?"*
+- *"Find periods similar to today's market"*
+- *"What happened during the 2008 crash?"*
+- *"Analyze the dashboard"*
 
 ---
 
@@ -107,8 +117,11 @@ friday-tony-stark-demo/
 │       ├── business.py     ← SWOT & business analysis
 │       ├── reports.py      ← PPTX presentations
 │       ├── browser.py      ← browser control
-│       ├── digest.py       ← morning briefing & research
-│       └── web.py          ← news & web fetch
+│       ├── digest.py        ← morning briefing & research
+│       ├── web.py           ← news & web fetch
+│       ├── dashboard.py     ← stock dashboard (chart + Claude analysis)
+│       ├── vision.py        ← screenshot analysis via Claude Vision
+│       └── market_memory.py ← semantic search over 100yr history (ChromaDB)
 │
 └── livekit/
     ├── livekit-server.exe  ← local LiveKit server (download separately)
@@ -158,6 +171,23 @@ double-click setup_startup.bat
 
 ---
 
+## Historical Market Database (one-time setup)
+
+Friday includes a local ChromaDB with 100 years of financial history. Build it once before first use:
+
+```powershell
+python build_market_db.py
+```
+
+This downloads and indexes:
+- **248** yearly records across S&P 500, Nasdaq, Dow, Gold, Silver, Bitcoin, VIX, Oil
+- **2,000** Fear & Greed Index data points
+- **29** major historical events (1929–2024)
+
+Data is stored in `data/market_chroma_db/` (not tracked in git). Re-run anytime to refresh.
+
+---
+
 ## Tech Stack
 
 - **[LiveKit Agents](https://github.com/livekit/agents)** — real-time voice pipeline
@@ -167,6 +197,8 @@ double-click setup_startup.bat
 - **[FastMCP](https://github.com/jlowin/fastmcp)** — MCP server framework
 - **Alpha Vantage** — real-time market data
 - **[uv](https://github.com/astral-sh/uv)** — Python package manager
+- **[ChromaDB](https://www.trychroma.com/)** — local vector database for historical market memory
+- **pyautogui** — screenshot capture for vision analysis
 
 ---
 
