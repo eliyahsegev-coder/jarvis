@@ -1,20 +1,7 @@
 """
 market_memory.py — חיפוש סמנטי בהיסטוריה של השוק
 """
-import chromadb
-from pathlib import Path
-import anthropic
-
-DB_PATH = str(Path(__file__).parent.parent.parent / "data" / "market_chroma_db")
-
-
-def _get_collections():
-    client = chromadb.PersistentClient(path=DB_PATH)
-    return {
-        "market": client.get_or_create_collection("market_history"),
-        "fear_greed": client.get_or_create_collection("fear_greed_history"),
-        "events": client.get_or_create_collection("historical_events"),
-    }
+from friday.tools._client import get_anthropic_client, get_chroma_collections
 
 
 def register(mcp):
@@ -23,44 +10,35 @@ def register(mcp):
         """מחפש בהיסטוריה של 100 שנות שוק הון ומחזיר תקופות דומות.
         question=שאלה בעברית או אנגלית על השוק"""
         try:
-            cols = _get_collections()
+            cols = get_chroma_collections()
 
-            market_results = cols["market"].query(
-                query_texts=[question],
-                n_results=n_results
-            )
-            events_results = cols["events"].query(
-                query_texts=[question],
-                n_results=3
-            )
-            fg_results = cols["fear_greed"].query(
-                query_texts=[question],
-                n_results=3
-            )
+            market_results = cols["market"].query(query_texts=[question], n_results=n_results)
+            events_results = cols["events"].query(query_texts=[question], n_results=3)
+            fg_results     = cols["fear_greed"].query(query_texts=[question], n_results=3)
 
             context_parts = []
 
             if market_results["documents"][0]:
-                context_parts.append("📊 נתוני שוק רלוונטיים:")
+                context_parts.append("נתוני שוק רלוונטיים:")
                 for doc in market_results["documents"][0]:
                     context_parts.append(f"- {doc}")
 
             if events_results["documents"][0]:
-                context_parts.append("\n📰 אירועים היסטוריים דומים:")
+                context_parts.append("\nאירועים היסטוריים דומים:")
                 for doc in events_results["documents"][0]:
                     context_parts.append(f"- {doc}")
 
             if fg_results["documents"][0]:
-                context_parts.append("\n😨 Fear & Greed היסטורי:")
+                context_parts.append("\nFear & Greed היסטורי:")
                 for doc in fg_results["documents"][0][:2]:
                     context_parts.append(f"- {doc}")
 
             context = "\n".join(context_parts)
 
-            ai_client = anthropic.Anthropic()
-            response = ai_client.messages.create(
+            client = get_anthropic_client()
+            response = client.messages.create(
                 model="claude-sonnet-4-6",
-                max_tokens=800,
+                max_tokens=500,
                 messages=[{
                     "role": "user",
                     "content": f"""Based on this historical market data, answer the question concisely and insightfully.
@@ -90,28 +68,20 @@ Be concise, sharp, and use specific data points."""
         """מוצא תקופות היסטוריות דומות למצב הנוכחי.
         description=תיאור המצב הנוכחי"""
         try:
-            cols = _get_collections()
+            cols = get_chroma_collections()
 
-            results = cols["market"].query(
-                query_texts=[description],
-                n_results=5
-            )
-            events = cols["events"].query(
-                query_texts=[description],
-                n_results=3
-            )
+            results = cols["market"].query(query_texts=[description], n_results=5)
+            events  = cols["events"].query(query_texts=[description], n_results=3)
 
-            docs = results["documents"][0] + events["documents"][0]
+            docs  = results["documents"][0] + events["documents"][0]
             metas = results["metadatas"][0]
-
             years = [m.get("year") for m in metas if "year" in m]
-
             context = "\n".join(docs)
 
-            ai_client = anthropic.Anthropic()
-            response = ai_client.messages.create(
+            client = get_anthropic_client()
+            response = client.messages.create(
                 model="claude-sonnet-4-6",
-                max_tokens=600,
+                max_tokens=400,
                 messages=[{
                     "role": "user",
                     "content": f"""Find historical parallels to this market situation:
@@ -142,7 +112,7 @@ Compare:
         """מחזיר היסטוריה של נכס מסוים משנה מסוימת.
         symbol=סמל הנכס, start_year=שנת התחלה"""
         try:
-            cols = _get_collections()
+            cols = get_chroma_collections()
 
             results = cols["market"].query(
                 query_texts=[f"{symbol} performance history"],

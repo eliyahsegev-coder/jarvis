@@ -2,22 +2,20 @@
 digest.py — דוח בוקר אוטומטי
 מחבר: מאקרו כלכלי + חדשות + המלצה עסקית יומית
 """
-import anthropic
 from datetime import datetime
+from friday.tools._client import get_anthropic_client
 
-def _get_client():
-    return anthropic.Anthropic()
 
 def register(mcp):
     @mcp.tool()
     async def morning_digest() -> str:
         """מייצר דוח בוקר מקיף: שווקים + חדשות + המלצה עסקית"""
-        client = _get_client()
+        client = get_anthropic_client()
         today = datetime.now().strftime("%A, %B %d, %Y")
 
         response = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=800,
+            max_tokens=400,
             messages=[{
                 "role": "user",
                 "content": f"""Generate a morning business briefing for {today}.
@@ -36,10 +34,10 @@ Be concise, sharp, and actionable. Speak like a top-tier business advisor."""
     @mcp.tool()
     async def deep_research(topic: str) -> str:
         """מחקר עמוק על נושא עסקי — מרובה שלבים עם ציטוטים"""
-        client = _get_client()
+        client = get_anthropic_client()
         response = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=1500,
+            max_tokens=600,
             messages=[{
                 "role": "user",
                 "content": f"""Conduct deep business research on: {topic}

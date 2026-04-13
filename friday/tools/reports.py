@@ -2,24 +2,16 @@
 reports.py — כלי יצירת מצגות וסיכומים
 יוצר קבצי PPTX ודוחות טקסטואליים בעברית
 """
-import anthropic
 from pptx import Presentation
 from pptx.util import Inches, Pt
 import os
-
-ANTHROPIC_CLIENT = None
-
-def _get_client():
-    global ANTHROPIC_CLIENT
-    if ANTHROPIC_CLIENT is None:
-        ANTHROPIC_CLIENT = anthropic.Anthropic()
-    return ANTHROPIC_CLIENT
+from friday.tools._client import get_anthropic_client
 
 def register(mcp):
     @mcp.tool()
     async def generate_presentation(topic: str, points: str, output_path: str = "presentation.pptx") -> str:
         """יוצר מצגת PPTX בעברית. topic=נושא, points=נקודות עיקריות מופרדות בפסיק"""
-        client = _get_client()
+        client = get_anthropic_client()
 
         # בקש מ-Claude לפרק לשקפים
         response = client.messages.create(
@@ -83,7 +75,7 @@ def register(mcp):
         """יוצר מצגת HTML מלאה עם dark theme שנפתחת בדפדפן. topic=נושא, points=נקודות מופרדות בפסיק"""
         import json, tempfile, subprocess, datetime
 
-        client = _get_client()
+        client = get_anthropic_client()
 
         # בקש מ-Claude מבנה שקפים
         response = client.messages.create(
@@ -443,7 +435,7 @@ def register(mcp):
     @mcp.tool()
     async def generate_summary_doc(text: str) -> str:
         """מסכם טקסט ארוך לדוח עסקי מסודר בעברית"""
-        client = _get_client()
+        client = get_anthropic_client()
         response = client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=600,

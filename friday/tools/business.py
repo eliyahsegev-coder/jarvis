@@ -2,24 +2,17 @@
 business.py — כלי ניתוח עסקי
 מנתח רעיונות ומצבים עסקיים בעברית באמצעות Claude
 """
-import anthropic
+from friday.tools._client import get_anthropic_client
 
-ANTHROPIC_CLIENT = None
-
-def _get_client():
-    global ANTHROPIC_CLIENT
-    if ANTHROPIC_CLIENT is None:
-        ANTHROPIC_CLIENT = anthropic.Anthropic()
-    return ANTHROPIC_CLIENT
 
 def register(mcp):
     @mcp.tool()
     async def analyze_business(description: str) -> str:
         """מנתח רעיון או מצב עסקי ומחזיר ניתוח SWOT והמלצות בעברית"""
-        client = _get_client()
+        client = get_anthropic_client()
         response = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=800,
+            max_tokens=500,
             messages=[{
                 "role": "user",
                 "content": f"""נתח את הדברים הבאים כיועץ עסקי בכיר. כתוב בעברית בלבד.
@@ -40,10 +33,10 @@ def register(mcp):
     @mcp.tool()
     async def daily_briefing() -> str:
         """מחזיר דוח בוקר עסקי: תובנה + המלצה אחת לפעולה"""
-        client = _get_client()
+        client = get_anthropic_client()
         response = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=400,
+            max_tokens=250,
             messages=[{
                 "role": "user",
                 "content": """כתוב דוח בוקר עסקי קצר בעברית לבעל עסק קטן-בינוני בישראל.

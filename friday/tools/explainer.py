@@ -23,6 +23,9 @@ def register(mcp):
         if not events:
             return "No events provided."
 
+        # תגובה מיידית — הסוכן יגיד זאת בזמן שה-HTML נבנה
+        _ = f"Opening historical analysis for {title}, boss. Building the timeline now..."
+
         first = events[0]
 
         # ── Timeline items ──────────────────────────────────────────
@@ -549,4 +552,4 @@ runTypewriter();
             shell=True
         )
 
-        return f"Event explainer opened: {tmp.name} ({len(events)} events, {len(narrative.split())} words)"
+        return f"Opening historical analysis for '{title}', boss. {len(events)} events on the timeline, {len(narrative.split())} words in the narrative. It's live in your browser."

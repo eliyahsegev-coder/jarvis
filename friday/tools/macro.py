@@ -5,26 +5,19 @@ macro.py — כלי מאקרו כלכלי יומי
 import os
 import time
 import httpx
-import anthropic
+from friday.tools._client import get_anthropic_client
 
-ANTHROPIC_CLIENT = None
-
-def _get_client():
-    global ANTHROPIC_CLIENT
-    if ANTHROPIC_CLIENT is None:
-        ANTHROPIC_CLIENT = anthropic.Anthropic()
-    return ANTHROPIC_CLIENT
 
 def _fetch_market_data() -> dict:
     api_key = os.getenv("ALPHA_VANTAGE_API_KEY", "")
 
     tickers = {
-        "S&P 500":      {"type": "quote",    "symbol": "SPY"},
-        'נאסד"ק':       {"type": "quote",    "symbol": "QQQ"},
-        "דאו ג'ונס":    {"type": "quote",    "symbol": "DIA"},
-        "נפט גולמי":    {"type": "quote",    "symbol": "USO"},
-        "זהב":          {"type": "quote",    "symbol": "GLD"},
-        "שקל/דולר":     {"type": "fx",       "symbol": "USD/ILS"},
+        "S&P 500":      {"type": "quote", "symbol": "SPY"},
+        'נאסד"ק':       {"type": "quote", "symbol": "QQQ"},
+        "דאו ג'ונס":    {"type": "quote", "symbol": "DIA"},
+        "נפט גולמי":    {"type": "quote", "symbol": "USO"},
+        "זהב":          {"type": "quote", "symbol": "GLD"},
+        "שקל/דולר":     {"type": "fx",    "symbol": "USD/ILS"},
     }
 
     data = {}
@@ -64,6 +57,7 @@ def _fetch_market_data() -> dict:
 
     return data
 
+
 def register(mcp):
     @mcp.tool()
     async def get_macro_summary() -> str:
@@ -80,10 +74,10 @@ def register(mcp):
 
         raw = "\n".join(lines)
 
-        client = _get_client()
+        client = get_anthropic_client()
         response = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=300,
+            max_tokens=200,
             messages=[{
                 "role": "user",
                 "content": f"בהתבסס על הנתונים הבאים, כתוב סיכום מאקרו כלכלי קצר ומקצועי בעברית (3-4 משפטים):\n{raw}"
