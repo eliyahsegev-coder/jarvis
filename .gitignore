@@ -178,3 +178,14 @@ pyrightconfig.json
 # Generated data (large, built locally)
 data/
 *.db
+
+# Graphify temp files
+.graphify_*
+graphify-out/cache/
+graphify-out/*.png
+
+# Temp HTML files
+presentation_*.html
+friday_explainer_*.html
+friday_NVDA_*.html
+friday_AAPL_*.html
