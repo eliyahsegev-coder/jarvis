@@ -183,6 +183,7 @@ data/
 .graphify_*
 graphify-out/cache/
 graphify-out/*.png
+graphify-out/graph.html
 
 # Temp HTML files
 presentation_*.html
