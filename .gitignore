@@ -178,6 +178,7 @@ pyrightconfig.json
 # Generated data (large, built locally)
 data/
 *.db
+data/friday_memory.db
 
 # Graphify temp files
 .graphify_*

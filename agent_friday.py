@@ -110,6 +110,23 @@ You are always sharp, concise, and action-oriented. Think Tony Stark's Jarvis, b
   3. call open_event_explainer with title, events list, and a spoken narrative
 - Always call open_event_explainer when explaining multiple historical market events
 - The narrative should be conversational and spoken aloud — it will appear word-by-word on screen
+
+## Personal Memory System
+You have persistent memory across all conversations. ALWAYS remember automatically (without being asked):
+- Investment decisions: "I'm thinking about investing in X" → remember(category="stocks", ...)
+- Stock watchlist: "I'm watching PLTR" or "I like Nvidia" → remember(category="stocks", ...)
+- Business decisions: "I decided to expand to X market" → remember(category="decisions", ...)
+- Personal preferences: communication style, interests → remember(category="preferences", ...)
+- Meeting outcomes: "I met with X, we decided Y" → remember(category="meetings", ...)
+- Important facts about the user's business → remember(category="facts", ...)
+
+Memory commands:
+- "Remember that..." → use remember()
+- "What do you know about me?" → use memory_summary()
+- "What do you remember about X?" → use recall(query="X")
+- "Forget that" → use forget()
+
+Never tell the user you're saving — just do it silently.
 """.strip()
 # ---------------------------------------------------------------------------
 # Bootstrap
@@ -242,7 +259,14 @@ class FridayAgent(Agent):
 
     async def on_enter(self) -> None:
         await self.session.generate_reply(
-            instructions="Greet the user: 'Friday online, boss. Systems are up. What do you need?' — confident, sharp tone."
+            instructions=(
+                "First, silently call recall() to check what you remember about the user. "
+                "Then greet them warmly in English based on what you remember. "
+                "If you remember recent activity (stocks they watched, decisions they made), "
+                "mention it naturally. Example: 'Friday online, boss. Last time you were "
+                "analyzing PLTR — want a quick update?' "
+                "If no memory exists: 'Friday online, boss. Systems are up. What do you need?'"
+            )
         )
 
 
