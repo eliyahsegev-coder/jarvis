@@ -1,8 +1,8 @@
-# Friday — Business Advisor AI
+# Sachbak — Business Advisor AI
 
 > *A Jarvis-level AI business advisor running on your personal device.*
 
-Friday is a voice-powered AI assistant that gives you real-time market data, business analysis, presentations, and browser control — all hands-free.
+Sachbak is a voice-powered AI assistant that gives you real-time market data, business analysis, presentations, and browser control — all hands-free.
 
 ---
 
@@ -63,7 +63,7 @@ uv run friday_voice
    - **LiveKit URL:** `ws://localhost:7880`
    - **API Key:** `devkey`
    - **API Secret:** `secret`
-3. Click **Connect** → click the microphone → talk to Friday
+3. Click **Connect** → click the microphone → talk to Sachbak
 
 ---
 
@@ -104,8 +104,8 @@ uv run friday_voice
 ```
 friday-tony-stark-demo/
 ├── start_friday.bat        ← one-click launch (all systems)
-├── setup_startup.bat       ← add Friday to Windows startup
-├── wake_word.py            ← "Hey Friday" wake word listener
+├── setup_startup.bat       ← add Sachbak to Windows startup
+├── wake_word.py            ← "Hey Sachbak" wake word listener
 ├── server.py               ← MCP server entry point
 ├── agent_friday.py         ← LiveKit voice agent
 ├── pyproject.toml
@@ -153,7 +153,7 @@ Copy `.env.example` → `.env` and fill in:
 
 ## Wake Word (Optional)
 
-To activate Friday hands-free with a voice command:
+To activate Sachbak hands-free with a voice command:
 
 1. Get a free key at https://console.picovoice.ai/
 2. Add `PORCUPINE_ACCESS_KEY=your_key` to `.env`
@@ -163,7 +163,7 @@ To activate Friday hands-free with a voice command:
 
 ## Add to Windows Startup
 
-To have Friday start automatically when Windows boots:
+To have Sachbak start automatically when Windows boots:
 
 ```bat
 double-click setup_startup.bat
@@ -173,7 +173,7 @@ double-click setup_startup.bat
 
 ## Historical Market Database (one-time setup)
 
-Friday includes a local ChromaDB with 100 years of financial history. Build it once before first use:
+Sachbak includes a local ChromaDB with 100 years of financial history. Build it once before first use:
 
 ```powershell
 python build_market_db.py

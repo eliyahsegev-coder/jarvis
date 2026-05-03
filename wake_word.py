@@ -1,5 +1,5 @@
 """
-wake_word.py — מאזין ל-"Hey Friday" ברקע ומפעיל dispatch אוטומטי
+wake_word.py — מאזין ל-"Hey Sachbak" ברקע ומפעיל dispatch אוטומטי
 הרץ: uv run python wake_word.py
 """
 import subprocess
@@ -13,8 +13,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def main():
-    print("Friday wake word listener starting...")
-    print("Say 'Hey Friday' to activate!")
+    print("Sachbak wake word listener starting...")
+    print("Say 'Hey Sachbak' to activate!")
 
     porcupine = pvporcupine.create(
         access_key=os.getenv("PORCUPINE_ACCESS_KEY"),
@@ -42,12 +42,12 @@ def main():
             if result >= 0:
                 now = time.time()
                 if now - last_dispatch > 5:  # מנע dispatch כפול
-                    print("Wake word detected! Activating Friday...")
+                    print("Wake word detected! Activating Sachbak...")
                     subprocess.run([
                         r"C:\claude\jarvis\friday-tony-stark-demo\livekit\lk.exe",
                         "dispatch", "create",
                         "--room", "my-room",
-                        "--agent-name", "friday",
+                        "--agent-name", "sachbak",
                         "--url", "ws://localhost:7880",
                         "--api-key", "devkey",
                         "--api-secret", "secret"

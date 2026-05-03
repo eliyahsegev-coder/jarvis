@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FRIDAY — Business Advisor AI</title>
+  <title>SACHBAK ג€” Business Advisor AI</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.9.0/jsrsasign-all-min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
   <style>
@@ -111,7 +111,7 @@
     }
 
     #transcript-panel:empty::after {
-      content: "Waiting for Friday to connect...";
+      content: "Waiting for SACHBAK to connect...";
       color: #333;
       font-size: 0.85rem;
       align-self: center;
@@ -175,7 +175,7 @@
 <body>
 
   <header>
-    <h1>FRIDAY</h1>
+    <h1>SACHBAK</h1>
     <p>BUSINESS ADVISOR AI</p>
   </header>
 
@@ -183,11 +183,11 @@
 
   <div id="waveform-container">
     <canvas id="waveform"></canvas>
-    <div id="speaking-label">FRIDAY SPEAKING</div>
+    <div id="speaking-label">SACHBAK SPEAKING</div>
   </div>
 
   <div id="transcript-panel">
-    <span class="panel-label">💬 LIVE TRANSCRIPT</span>
+    <span class="panel-label">נ’¬ LIVE TRANSCRIPT</span>
   </div>
 
   <button id="mic-btn" title="Toggle microphone">
@@ -198,14 +198,14 @@
   <div id="mic-label">MICROPHONE</div>
 
   <script>
-    // ── Config ────────────────────────────────────────────────────────────────
+    // ג”€ג”€ Config ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
     const LIVEKIT_URL  = 'ws://localhost:7880';
     const API_KEY      = 'devkey';
     const API_SECRET   = 'secret';
     const ROOM_NAME    = 'my-room';
     const IDENTITY     = 'user-' + Math.random().toString(36).slice(2, 7);
 
-    // ── JWT Token generation (client-side, dev only) ──────────────────────────
+    // ג”€ג”€ JWT Token generation (client-side, dev only) ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
     function createToken() {
       const now   = Math.floor(Date.now() / 1000);
       const claim = {
@@ -219,7 +219,7 @@
       return KJUR.jws.JWS.sign('HS256', JSON.stringify(header), JSON.stringify(claim), { utf8: API_SECRET });
     }
 
-    // ── UI helpers ────────────────────────────────────────────────────────────
+    // ג”€ג”€ UI helpers ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
     const statusEl      = document.getElementById('status-text');
     const transcriptPanel = document.getElementById('transcript-panel');
     const micBtn        = document.getElementById('mic-btn');
@@ -241,11 +241,11 @@
       transcriptPanel.scrollTop = transcriptPanel.scrollHeight;
     }
 
-    // ── Waveform ──────────────────────────────────────────────────────────────
+    // ג”€ג”€ Waveform ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
     const canvas  = document.getElementById('waveform');
     const ctx     = canvas.getContext('2d');
     let   analyser, dataArray, animFrame;
-    let   fridaySpeaking = false;
+    let   SACHBAKSpeaking = false;
 
     function resizeCanvas() {
       canvas.width  = canvas.offsetWidth;
@@ -304,7 +304,7 @@
       drawWaveform();
     }
 
-    // ── LiveKit connection ────────────────────────────────────────────────────
+    // ג”€ג”€ LiveKit connection ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
     let room;
     let micEnabled = true;
 
@@ -318,13 +318,13 @@
         dynacast: true,
       });
 
-      // Remote track subscribed (Friday's audio)
+      // Remote track subscribed (SACHBAK's audio)
       room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, pub, participant) => {
         if (track.kind === LivekitClient.Track.Kind.Audio) {
           const el = track.attach();
           el.style.display = 'none';
           document.body.appendChild(el);
-          fridaySpeaking = true;
+          SACHBAKSpeaking = true;
           speakLabel.classList.add('active');
           attachRemoteAudioAnalyser(track);
         }
@@ -333,29 +333,29 @@
       room.on(LivekitClient.RoomEvent.TrackUnsubscribed, (track) => {
         if (track.kind === LivekitClient.Track.Kind.Audio) {
           track.detach();
-          fridaySpeaking = false;
+          SACHBAKSpeaking = false;
           speakLabel.classList.remove('active');
           if (animFrame) cancelAnimationFrame(animFrame);
           drawIdle();
         }
       });
 
-      // תמלול מילה במילה
+      // ׳×׳׳׳•׳ ׳׳™׳׳” ׳‘׳׳™׳׳”
       room.on(LivekitClient.RoomEvent.TranscriptionReceived, (segments, participant) => {
         const isUser = participant?.identity === IDENTITY;
-        const role = isUser ? 'user' : 'friday';
+        const role = isUser ? 'user' : 'SACHBAK';
         segments.forEach(seg => {
           if (seg.text?.trim()) addLine(role, seg.text, seg.id);
         });
       });
 
-      // גיבוי — data messages
+      // ׳’׳™׳‘׳•׳™ ג€” data messages
       room.on(LivekitClient.RoomEvent.DataReceived, (payload, participant) => {
         try {
           const text = new TextDecoder().decode(payload);
           const data = JSON.parse(text);
           if (data.type === 'transcript' && data.text?.trim()) {
-            const role = participant?.identity === IDENTITY ? 'user' : 'friday';
+            const role = participant?.identity === IDENTITY ? 'user' : 'SACHBAK';
             addLine(role, data.text);
           }
         } catch (_) {}
@@ -363,8 +363,8 @@
 
       room.on(LivekitClient.RoomEvent.ParticipantConnected, (p) => {
         if (p.identity !== IDENTITY) {
-          setStatus('FRIDAY CONNECTED');
-          addLine('friday', 'Friday online, boss. Systems are up. What do you need?');
+          setStatus('SACHBAK CONNECTED');
+          addLine('SACHBAK', 'SACHBAK online, boss. Systems are up. What do you need?');
         }
       });
 
@@ -379,7 +379,7 @@
       });
 
       await room.connect(LIVEKIT_URL, token);
-      setStatus('CONNECTED — WAITING FOR FRIDAY...');
+      setStatus('CONNECTED ג€” WAITING FOR SACHBAK...');
 
       // Enable microphone
       await room.localParticipant.setMicrophoneEnabled(true);
@@ -387,7 +387,7 @@
       document.getElementById('mic-label').textContent = 'MIC ON';
     }
 
-    // ── Mic toggle ────────────────────────────────────────────────────────────
+    // ג”€ג”€ Mic toggle ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
     micBtn.addEventListener('click', async () => {
       if (!room) return;
       micEnabled = !micEnabled;
@@ -397,11 +397,12 @@
       document.getElementById('mic-label').textContent = micEnabled ? 'MIC ON' : 'MIC OFF';
     });
 
-    // ── Start ─────────────────────────────────────────────────────────────────
+    // ג”€ג”€ Start ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
     connect().catch(err => {
-      setStatus('ERROR — ' + err.message);
+      setStatus('ERROR ג€” ' + err.message);
       console.error(err);
     });
   </script>
 </body>
 </html>
+

@@ -9,7 +9,7 @@ def register(mcp):
     def server_info() -> str:
         """Returns basic info about this MCP server."""
         return (
-            "Friday MCP Server\n"
+            "Sachbak MCP Server\n"
             "A Tony Stark-inspired AI assistant.\n"
             "Built with FastMCP."
         )

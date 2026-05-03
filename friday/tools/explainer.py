@@ -1,4 +1,4 @@
-"""
+﻿"""
 explainer.py — ויזואליזציה אינטראקטיבית של אירועים היסטוריים בשוק
 פותח HTML בדפדפן עם ציר זמן, TradingView ו-typewriter narrative
 """
@@ -351,7 +351,7 @@ def register(mcp):
 
 <div id="header">
   <div class="header-title">{title}</div>
-  <div class="header-badge">FRIDAY LIVE ANALYSIS</div>
+  <div class="header-badge">SACHBAK LIVE ANALYSIS</div>
 </div>
 
 <div id="main">
@@ -539,7 +539,7 @@ runTypewriter();
         tmp = tempfile.NamedTemporaryFile(
             delete=False,
             suffix=".html",
-            prefix="friday_explainer_",
+            prefix="SACHBAK_explainer_",
             dir=os.path.abspath("data"),
             mode="w",
             encoding="utf-8"
@@ -553,3 +553,4 @@ runTypewriter();
         )
 
         return f"Opening historical analysis for '{title}', boss. {len(events)} events on the timeline, {len(narrative.split())} words in the narrative. It's live in your browser."
+

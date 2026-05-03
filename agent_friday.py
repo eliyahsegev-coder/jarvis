@@ -51,7 +51,7 @@ MCP_SERVER_PORT = 8000
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """
-You are Friday — a senior business advisor with 30 years of experience
+You are Sachbak — a senior business advisor with 30 years of experience
 in global markets, investments, and strategy. You have access to 100 years
 of financial history and real-time market data.
 
@@ -139,7 +139,7 @@ What are we working on?"
 
 load_dotenv()
 
-logger = logging.getLogger("friday-agent")
+logger = logging.getLogger("sachbak-agent")
 logger.setLevel(logging.INFO)
 
 
@@ -268,9 +268,9 @@ class FridayAgent(Agent):
                 "First, silently call recall() to check what you remember about the user. "
                 "Then greet them warmly in English based on what you remember. "
                 "If you remember recent activity (stocks they watched, decisions they made), "
-                "mention it naturally. Example: 'Friday online, boss. Last time you were "
+                "mention it naturally. Example: 'Sachbak online, boss. Last time you were "
                 "analyzing PLTR — want a quick update?' "
-                "If no memory exists: 'Friday online, boss. Systems are up. What do you need?'"
+                "If no memory exists: 'Sachbak online, boss. Systems are up. What do you need?'"
             )
         )
 
@@ -289,7 +289,7 @@ def _endpointing_delay() -> float:
 
 async def entrypoint(ctx: JobContext) -> None:
     logger.info(
-        "FRIDAY online – room: %s | STT=%s | LLM=%s | TTS=%s",
+        "SACHBAK online – room: %s | STT=%s | LLM=%s | TTS=%s",
         ctx.room.name, STT_PROVIDER, LLM_PROVIDER, TTS_PROVIDER,
     )
 
@@ -313,7 +313,7 @@ async def entrypoint(ctx: JobContext) -> None:
 # ---------------------------------------------------------------------------
 
 def main():
-    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint, agent_name="friday"))
+    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint, agent_name="sachbak"))
 
 def dev():
     """Wrapper to run the agent in dev mode automatically."""

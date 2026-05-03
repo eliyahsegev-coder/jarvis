@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo    FRIDAY - Business Advisor AI
+echo    SACHBAK - Business Advisor AI
 echo    Starting all systems...
 echo ========================================
 
@@ -18,7 +18,7 @@ timeout /t 10 /nobreak > nul
 
 :: Keep window open to show status
 echo.
-echo All systems online! Friday is ready.
+echo All systems online! Sachbak is ready.
 echo Run dispatch_friday.bat to connect.
 echo.
 echo Press any key to close this window...

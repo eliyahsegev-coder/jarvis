@@ -10,7 +10,7 @@ load_dotenv()
 
 class Config:
     # Server identity
-    SERVER_NAME: str = os.getenv("SERVER_NAME", "Friday")
+    SERVER_NAME: str = os.getenv("SERVER_NAME", "Sachbak")
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 
     # External API keys (add as needed)

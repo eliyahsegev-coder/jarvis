@@ -1,4 +1,4 @@
-"""
+﻿"""
 dashboard.py — פותח דשבורד מניה: גרף רחב למעלה, ניתוח Claude + חיפוש למטה
 """
 import webbrowser
@@ -53,7 +53,7 @@ def register(mcp):
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8"/>
-  <title>FRIDAY — {symbol}</title>
+  <title>SACHBAK — {symbol}</title>
   <style>
     * {{ margin: 0; padding: 0; box-sizing: border-box; }}
     body {{
@@ -149,7 +149,7 @@ def register(mcp):
 </head>
 <body>
   <header>
-    <h1>FRIDAY</h1>
+    <h1>SACHBAK</h1>
     <span class="badge">{symbol}</span>
     <span class="question">{question if question else "Market Dashboard"}</span>
   </header>
@@ -164,7 +164,7 @@ def register(mcp):
     <div class="bottom-row">
 
       <div class="panel">
-        <div class="panel-label">FRIDAY ANALYSIS</div>
+        <div class="panel-label">SACHBAK ANALYSIS</div>
         <div class="analysis-panel">
           <div class="symbol-title">ניתוח {symbol}</div>
           <div class="body-text">{analysis_html}</div>
@@ -183,7 +183,7 @@ def register(mcp):
 
         tmp = tempfile.NamedTemporaryFile(
             mode='w', suffix='.html', delete=False,
-            prefix=f'friday_{symbol}_', encoding='utf-8'
+            prefix=f'SACHBAK_{symbol}_', encoding='utf-8'
         )
         tmp.write(html)
         tmp.close()
@@ -217,3 +217,4 @@ def register(mcp):
         return f"""Last dashboard for {data['symbol']} ({data['timestamp']}):
 Question: {data['question']}
 Analysis: {data['analysis']}"""
+

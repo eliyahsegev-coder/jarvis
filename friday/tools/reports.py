@@ -1,4 +1,4 @@
-"""
+﻿"""
 reports.py — כלי יצירת מצגות וסיכומים
 יוצר קבצי PPTX ודוחות טקסטואליים בעברית
 """
@@ -117,7 +117,7 @@ def register(mcp):
         slide_divs.append(f"""
     <div class="slide active" id="slide-0">
       <div class="slide-content title-slide">
-        <div class="title-badge">FRIDAY PRESENTATION</div>
+        <div class="title-badge">SACHBAK PRESENTATION</div>
         <h1 class="main-title">{title}</h1>
         <p class="main-subtitle">{subtitle}</p>
         <div class="slide-meta">{datetime.date.today().strftime("%d.%m.%Y")} &nbsp;|&nbsp; {total} שקפים</div>
@@ -453,3 +453,4 @@ def register(mcp):
             }]
         )
         return response.content[0].text
+
