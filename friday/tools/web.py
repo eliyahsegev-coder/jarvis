@@ -100,12 +100,15 @@ def register(mcp):
         Opens the World Monitor dashboard (worldmonitor.app) in the system's web browser.
         Use this when the user wants a visual overview of global events or a real-time map.
         """
-        import webbrowser
+        from friday.tools._client import show_in_app
+        import urllib.request, json
         url = "https://worldmonitor.app/"
-        
+        # Send external URL directly to Electron overlay
+        payload = json.dumps({"url": url, "title": "WORLD MONITOR"}).encode()
         try:
-            # This opens the URL in the default browser (Chrome/Edge/Safari)
-            webbrowser.open(url)
-            return "Displaying the World Monitor on your primary screen now, sir."
-        except Exception as e:
-            return f"I'm unable to initialize the visual monitor: {str(e)}"
+            req = urllib.request.Request("http://127.0.0.1:9001", data=payload,
+                headers={"Content-Type": "application/json"}, method="POST")
+            urllib.request.urlopen(req, timeout=1)
+        except Exception:
+            import webbrowser; webbrowser.open(url)
+        return "Displaying the World Monitor on your primary screen now, sir."

@@ -5,7 +5,7 @@ reports.py — כלי יצירת מצגות וסיכומים
 from pptx import Presentation
 from pptx.util import Inches, Pt
 import os
-from friday.tools._client import get_anthropic_client
+from friday.tools._client import get_anthropic_client, show_in_app
 
 def register(mcp):
     @mcp.tool()
@@ -63,11 +63,9 @@ def register(mcp):
                 p.level = 0
 
         prs.save(output_path)
+        # PPTX can't show in-app iframe — open with default viewer
         import subprocess
-        subprocess.Popen(
-            ['powershell', '-c', f'Start-Process "{os.path.abspath(output_path)}"'],
-            shell=True
-        )
+        subprocess.Popen(['powershell', '-c', f'Start-Process "{os.path.abspath(output_path)}"'], shell=True)
         return f"Presentation created and opened: {os.path.abspath(output_path)} ({len(data['slides'])} slides)"
 
     @mcp.tool()
@@ -426,10 +424,7 @@ def register(mcp):
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(html)
 
-        subprocess.Popen(
-            ['powershell', '-c', f'Start-Process "{out_path}"'],
-            shell=True
-        )
+        show_in_app(out_path, f"PRESENTATION — {topic[:30].upper()}")
         return f"HTML presentation created and opened: {out_path} ({total} slides)"
 
     @mcp.tool()

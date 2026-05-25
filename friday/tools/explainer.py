@@ -4,9 +4,9 @@ explainer.py — ויזואליזציה אינטראקטיבית של אירוע
 """
 import os
 import json
-import subprocess
 import tempfile
 from typing import Any
+from friday.tools._client import show_in_app
 
 
 def register(mcp):
@@ -547,10 +547,7 @@ runTypewriter();
         tmp.write(html)
         tmp.close()
 
-        subprocess.Popen(
-            ['powershell', '-c', f'Start-Process "{tmp.name}"'],
-            shell=True
-        )
+        show_in_app(tmp.name, f"HISTORICAL ANALYSIS — {title.upper()}")
 
-        return f"Opening historical analysis for '{title}', boss. {len(events)} events on the timeline, {len(narrative.split())} words in the narrative. It's live in your browser."
+        return f"Opening historical analysis for '{title}', boss. {len(events)} events on the timeline, {len(narrative.split())} words in the narrative. It's live in the command center."
 

@@ -1,12 +1,11 @@
 ﻿"""
 dashboard.py — פותח דשבורד מניה: גרף רחב למעלה, ניתוח Claude + חיפוש למטה
 """
-import webbrowser
 import tempfile
 import json
 import datetime
 from pathlib import Path
-from friday.tools._client import get_anthropic_client
+from friday.tools._client import get_anthropic_client, show_in_app
 
 
 def _get_analysis(symbol: str, question: str) -> str:
@@ -187,7 +186,7 @@ def register(mcp):
         )
         tmp.write(html)
         tmp.close()
-        webbrowser.open(f'file:///{tmp.name}')
+        show_in_app(tmp.name, f"STOCK DASHBOARD — {symbol}")
 
         data_dir = Path(__file__).parent.parent.parent / "data"
         data_dir.mkdir(exist_ok=True)

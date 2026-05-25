@@ -31,3 +31,24 @@ def get_chroma_collections() -> dict:
             "events":     _chroma_client.get_or_create_collection("historical_events"),
         }
     return _chroma_collections
+
+
+# ── Electron app display ──────────────────────────────────────────
+def show_in_app(file_path: str, title: str = "SACHBAK VIEW"):
+    """Display an HTML file inside the Electron Command Center.
+    Falls back to browser if the app is not running."""
+    import urllib.request, json, os
+    url = "file:///" + file_path.replace("\\", "/")
+    payload = json.dumps({"url": url, "title": title}).encode()
+    try:
+        req = urllib.request.Request(
+            "http://127.0.0.1:9001",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        urllib.request.urlopen(req, timeout=1)
+    except Exception:
+        # Fallback: open in browser
+        import webbrowser
+        webbrowser.open(url)
