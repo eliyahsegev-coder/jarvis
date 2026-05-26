@@ -1,38 +1,85 @@
 """
 vision.py — ניתוח צילום מסך עם Claude Vision
-מצלם את המסך ומנתח גרפים/דשבורדים פיננסיים
+מצלם את חלון האפליקציה (Electron) או את כל המסך כגיבוי
 """
 import base64
 import io
-import pyautogui
-import anthropic
+from friday.tools._client import get_anthropic_client
 
-ANTHROPIC_CLIENT = None
 
-def _get_client():
-    global ANTHROPIC_CLIENT
-    if ANTHROPIC_CLIENT is None:
-        ANTHROPIC_CLIENT = anthropic.Anthropic()
-    return ANTHROPIC_CLIENT
+def _capture_screen() -> bytes:
+    """Capture screen: try Electron app window first, fallback to pyautogui."""
+    # Try Electron Command Center first (best quality, app-specific)
+    try:
+        import urllib.request
+        with urllib.request.urlopen('http://127.0.0.1:9001/screenshot', timeout=2) as r:
+            if r.status == 200:
+                return r.read()
+    except Exception:
+        pass
+
+    # Fallback: full desktop screenshot via pyautogui
+    try:
+        import pyautogui
+        screenshot = pyautogui.screenshot()
+        buf = io.BytesIO()
+        screenshot.save(buf, format='PNG')
+        return buf.getvalue()
+    except Exception as e:
+        raise RuntimeError(f"Could not capture screen: {e}")
+
 
 def register(mcp):
     @mcp.tool()
     async def analyze_dashboard_screenshot(question: str = "") -> str:
-        """מצלם את המסך, שולח ל-Claude Vision ומחזיר ניתוח של הגרף המוצג"""
+        """מצלם את מסך האפליקציה ומנתח אותו עם Claude Vision.
+        קורא אוטומטית כשצריך לראות מה מוצג על המסך."""
 
-        # צילום מסך
-        screenshot = pyautogui.screenshot()
+        png_bytes = _capture_screen()
+        image_data = base64.standard_b64encode(png_bytes).decode('utf-8')
 
-        # המרה ל-base64
-        buffer = io.BytesIO()
-        screenshot.save(buffer, format='PNG')
-        image_data = base64.standard_b64encode(buffer.getvalue()).decode('utf-8')
+        client = get_anthropic_client()
+        prompt = (
+            "You are a professional financial analyst looking at the user's screen. "
+            "Describe exactly what you see: charts, prices, data, UI elements. "
+            "Then provide your analysis: trends, key levels, signals, actionable insights. "
+        )
+        if question:
+            prompt += f"The user specifically asked: {question}. Address this directly."
+        else:
+            prompt += "Give a concise but complete analysis of everything visible."
 
-        # שליחה ל-Claude Vision
-        client = _get_client()
         response = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=1000,
+            max_tokens=800,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/png",
+                            "data": image_data,
+                        },
+                    },
+                    {"type": "text", "text": prompt}
+                ],
+            }]
+        )
+        return response.content[0].text
+
+    @mcp.tool()
+    async def watch_screen() -> str:
+        """מצלם את המסך ומחזיר תיאור מלא של מה שמוצג כרגע — קרא אוטומטית לפני כל תשובה שקשורה למה שהמשתמש רואה."""
+
+        png_bytes = _capture_screen()
+        image_data = base64.standard_b64encode(png_bytes).decode('utf-8')
+
+        client = get_anthropic_client()
+        response = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=500,
             messages=[{
                 "role": "user",
                 "content": [
@@ -47,15 +94,9 @@ def register(mcp):
                     {
                         "type": "text",
                         "text": (
-                            "You are a professional financial analyst. "
-                            "Analyze this stock dashboard screenshot. Focus on: "
-                            "1) Price trend and direction "
-                            "2) Key support/resistance levels visible "
-                            "3) Volume patterns "
-                            "4) Technical indicators if visible "
-                            "5) Overall market sentiment. "
-                            f"Additional context from user: {question}. "
-                            "Be concise and actionable."
+                            "Describe what you see on this screen in 2-3 sentences. "
+                            "Focus on: what app/content is visible, any numbers or data shown, "
+                            "and the current state. Be brief and factual."
                         )
                     }
                 ],
