@@ -1,11 +1,70 @@
 ﻿"""
-dashboard.py — פותח דשבורד מניה: גרף רחב למעלה, ניתוח Claude + חיפוש למטה
+dashboard.py — פותח דשבורד מניה: גרף רחב למעלה, ניתוח Claude + חדשות למטה
 """
 import tempfile
 import json
 import datetime
+import urllib.request
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from friday.tools._client import get_anthropic_client, show_in_app
+
+
+def _fetch_news_html(symbol: str, question: str) -> str:
+    """שולף חדשות מ-Yahoo Finance RSS ומחזיר HTML מעוצב."""
+    query = question if question else symbol
+    urls = [
+        f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={symbol}&region=US&lang=en-US",
+        f"https://news.google.com/rss/search?q={query}+stock&hl=en-US&gl=US&ceid=US:en",
+    ]
+
+    items = []
+    for url in urls:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=5) as r:
+                tree = ET.parse(r)
+                root = tree.getroot()
+                for item in root.iter("item"):
+                    title = item.findtext("title", "").strip()
+                    link  = item.findtext("link", "#").strip()
+                    pub   = item.findtext("pubDate", "").strip()[:16]
+                    desc  = item.findtext("description", "").strip()
+                    # strip HTML tags from description
+                    import re
+                    desc = re.sub(r"<[^>]+>", "", desc)[:140]
+                    if title:
+                        items.append({"title": title, "link": link, "pub": pub, "desc": desc})
+            if len(items) >= 8:
+                break
+        except Exception:
+            continue
+
+    if not items:
+        return '<div style="color:#666;padding:20px;font-size:0.85rem;">No news available right now.</div>'
+
+    cards = ""
+    for item in items[:10]:
+        title = item["title"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        desc  = item["desc"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        cards += f"""
+        <a class="news-card" href="{item['link']}" target="_blank">
+          <div class="news-title">{title}</div>
+          <div class="news-desc">{desc}</div>
+          <div class="news-time">{item['pub']}</div>
+        </a>"""
+
+    return f"""
+    <style>
+      .news-feed {{ overflow-y: auto; height: 100%; padding: 8px; display: flex; flex-direction: column; gap: 6px; }}
+      .news-card {{ display: block; background: #12121e; border: 1px solid #1e1e30; border-radius: 7px;
+                   padding: 10px 12px; text-decoration: none; color: inherit; transition: border-color .2s; }}
+      .news-card:hover {{ border-color: #00d4ff44; }}
+      .news-title {{ font-size: 0.82rem; color: #dde; line-height: 1.4; margin-bottom: 4px; }}
+      .news-desc  {{ font-size: 0.72rem; color: #778; line-height: 1.3; margin-bottom: 4px; }}
+      .news-time  {{ font-size: 0.62rem; color: #445; letter-spacing: .5px; }}
+    </style>
+    <div class="news-feed">{cards}</div>"""
 
 
 def _get_analysis(symbol: str, question: str) -> str:
@@ -43,10 +102,9 @@ def register(mcp):
         # תגובה מיידית לפני הבנייה
         immediate = f"Opening {symbol} dashboard, boss. Give me a second..."
 
-        search_query = question.replace(" ", "+") if question else f"{symbol}+stock+analysis+reasons"
-
         analysis = _get_analysis(symbol, question)
         analysis_html = analysis.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>")
+        news_html = _fetch_news_html(symbol, question)
 
         html = f"""<!DOCTYPE html>
 <html lang="he" dir="rtl">
@@ -171,8 +229,8 @@ def register(mcp):
       </div>
 
       <div class="panel">
-        <div class="panel-label">ANALYSIS &amp; REASONS</div>
-        <iframe src="https://www.google.com/search?q={search_query}&igu=1"></iframe>
+        <div class="panel-label">LATEST NEWS — {symbol}</div>
+        {news_html}
       </div>
 
     </div>
